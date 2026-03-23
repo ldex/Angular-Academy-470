@@ -13,9 +13,9 @@ import { Product } from '../../../../models/product.model';
   imports: [CommonModule, ProductDetailsComponent],
   template: `
     <app-product-details
-      [product]="product$ | async"
-      [error]="error"
-      [loading]="loading"
+      [product]="product()"
+      [error]="error()"
+      [loading]="loading()"
       [isAuthenticated]="(authState$ | async)?.isAuthenticated || false"
       (addToCart)="onAddToCart($event)"
       (delete)="onDelete($event)">
@@ -28,26 +28,32 @@ export class ProductDetailsContainerComponent {
   private cartService = inject(CartService);
   private authService = inject(AuthService);
 
-  product$!: Observable<Product>;
-  error: string | null = null;
-  loading: boolean = false;
+  // product$!: Observable<Product>;
+  // error: string | null = null;
+  // loading: boolean = false;
+
+  product = this.productService.selectedProduct;
+  loading = this.productService.loading;
+  error = this.productService.error;
 
   authState$ = this.authService.getAuthState();
 
   @Input({ transform: numberAttribute })
   set id(productId: number)
   {
-    this.loading = true;
-    this.product$ = this
-      .productService
-      .getProduct(productId)
-      .pipe(
-        catchError(error => {
-          this.error = error.message || "Failed to load product";
-          return EMPTY;
-        }),
-        finalize(() => this.loading = false)
-      )
+    this.productService.getProduct(productId);
+
+    // this.loading = true;
+    // this.product$ = this
+    //   .productService
+    //   .getProduct(productId)
+    //   .pipe(
+    //     catchError(error => {
+    //       this.error = error.message || "Failed to load product";
+    //       return EMPTY;
+    //     }),
+    //     finalize(() => this.loading = false)
+    //   )
   }
 
   onAddToCart(productId: number): void {

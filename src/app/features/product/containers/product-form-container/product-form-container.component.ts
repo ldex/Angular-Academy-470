@@ -15,29 +15,44 @@ import { Product } from "../../../../models/product.model";
   selector: "app-product-form-container",
   imports: [CommonModule, ProductFormComponent],
   template: `
-    <app-product-form
-      [product]="product$ | async"
-      [isSubmitting]="isSubmitting"
-      (save)="onSave($event)"
-      (cancel)="onCancel()"
-    >
-    </app-product-form>
+    @if (loading()) {
+      <div class="loading"></div>
+    } @else {
+        <app-product-form
+          [product]="product()"
+          [isSubmitting]="isSubmitting"
+          (save)="onSave($event)"
+          (cancel)="onCancel()"
+        >
+        </app-product-form>
+     }
   `,
 })
 export class ProductFormContainerComponent {
   private router = inject(Router);
   private productService = inject(ProductService);
 
-  product$!: Observable<Product | null>;
+  //product$!: Observable<Product | null>;
+
+  product = this.productService.selectedProduct;
+  loading = this.productService.loading;
+
   isSubmitting = false;
   private productId: number | null = null;
 
   @Input({ transform: numberAttribute })
   set id(productId: number) {
     this.productId = productId ? Number(productId) : null;
-    this.product$ = this.productId
-      ? this.productService.getProduct(this.productId)
-      : of(null);
+
+    this.productService.clearSelectedProduct();
+
+    if (this.productId) {
+      this.productService.getProduct(this.productId)
+    }
+
+    // this.product$ = this.productId
+    //   ? this.productService.getProduct(this.productId)
+    //   : of(null);
   }
 
   onSave(formData: Partial<Product>): void {

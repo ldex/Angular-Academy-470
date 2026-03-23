@@ -12,9 +12,9 @@ import { Product } from '../../../../models/product.model';
   imports: [CommonModule, ProductListComponent],
   template: `
     <app-product-list
-      [products]="products$ | async"
-      [error]="error"
-      [loading]="loading"
+      [products]="products()"
+      [error]="error()"
+      [loading]="loading()"
       [isAuthenticated]="(authState$ | async)?.isAuthenticated || false"
       (addToCart)="onAddToCart($event)"
       (refresh)="onRefresh()">
@@ -26,31 +26,19 @@ export class ProductListContainerComponent implements OnInit {
   private cartService = inject(CartService);
   private authService = inject(AuthService);
 
-  products$!: Observable<Product[]>;
-  error: string | null = null;
-  loading: boolean = false;
+  // products$!: Observable<Product[]>;
+  // error: string | null = null;
+  // loading: boolean = false;
+
+  products = this.productService.products;
+  loading = this.productService.loading;
+  error = this.productService.error;
 
   authState$ = this.authService.getAuthState();
 
-  constructor() {
-    this.loadProducts();
+  ngOnInit(): void {
+    this.productService.getProducts();
   }
-
-  private loadProducts() {
-    this.loading = true;
-    this.products$ = this
-      .productService
-      .getProducts()
-      .pipe(
-        catchError(error => {
-          this.error = error.message || "Failed to load products";
-          return EMPTY;
-        }),
-        finalize(() => this.loading = false)
-      );
-  }
-
-  ngOnInit(): void {}
 
   onAddToCart(productId: number): void {
     this.cartService.addToCart(productId);
@@ -58,6 +46,6 @@ export class ProductListContainerComponent implements OnInit {
 
   onRefresh(): void {
     this.productService.refreshCache();
-    this.loadProducts();
+//    this.loadProducts();
   }
 }
