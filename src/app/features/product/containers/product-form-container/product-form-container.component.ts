@@ -6,7 +6,6 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { Router } from "@angular/router";
-import { Observable, of } from "rxjs";
 import { ProductFormComponent } from "../../components/product-form/product-form.component";
 import { ProductService } from "../../../../services/product.service";
 import { Product } from "../../../../models/product.model";
