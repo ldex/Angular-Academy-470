@@ -6,6 +6,7 @@ import { CartService } from '../../../../services/cart.service';
 import { AuthService } from '../../../../services/auth.service';
 import { Product } from '../../../../models/product.model';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { ProductStore } from '../../../../stores/product.store';
 
 @Component({
   selector: 'app-product-list-container',
@@ -21,33 +22,30 @@ import { toSignal } from '@angular/core/rxjs-interop';
     </app-product-list>
   `
 })
-export class ProductListContainerComponent implements OnInit {
-  private productService = inject(ProductService);
+export class ProductListContainerComponent {
+  //private productService = inject(ProductService);
   private cartService = inject(CartService);
   private authService = inject(AuthService);
+  private store = inject(ProductStore);
 
   // products$!: Observable<Product[]>;
   // error: string | null = null;
   // loading: boolean = false;
 
-  products = this.productService.products;
-  loading = this.productService.loading;
-  error = this.productService.error;
+  products = this.store.products;
+  loading = this.store.loading;
+  error = this.store.error;
 
   //authState$ = this.authService.getAuthState();
   private authState = toSignal(this.authService.getAuthState());
   isAuthenticated = computed(() => this.authState()?.isAuthenticated ?? false);
-
-  ngOnInit(): void {
-    this.productService.getProducts();
-  }
 
   onAddToCart(productId: number): void {
     this.cartService.addToCart(productId);
   }
 
   onRefresh(): void {
-    this.productService.refreshCache();
+    this.store.refreshCache();
 //    this.loadProducts();
   }
 }

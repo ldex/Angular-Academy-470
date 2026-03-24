@@ -7,6 +7,7 @@ import { CartService } from '../../../../services/cart.service';
 import { AuthService } from '../../../../services/auth.service';
 import { Product } from '../../../../models/product.model';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { ProductStore } from '../../../../stores/product.store';
 
 @Component({
   selector: 'app-product-details-container',
@@ -24,17 +25,18 @@ import { toSignal } from '@angular/core/rxjs-interop';
 })
 export class ProductDetailsContainerComponent {
   private router = inject(Router);
-  private productService = inject(ProductService);
+ // private productService = inject(ProductService);
   private cartService = inject(CartService);
   private authService = inject(AuthService);
+  private store = inject(ProductStore);
 
   // product$!: Observable<Product>;
   // error: string | null = null;
   // loading: boolean = false;
 
-  product = this.productService.selectedProduct;
-  loading = this.productService.loading;
-  error = this.productService.error;
+  product = this.store.selectedProduct;
+  loading = this.store.loading;
+  error = this.store.error;
 
   //authState$ = this.authService.getAuthState();
   private authState = toSignal(this.authService.getAuthState());
@@ -43,7 +45,7 @@ export class ProductDetailsContainerComponent {
   id = input.required<number>();
 
   ngOnInit() {
-    this.productService.getProduct(this.id());
+    this.store.loadProduct(this.id());
   }
 
   onAddToCart(productId: number): void {
@@ -51,13 +53,6 @@ export class ProductDetailsContainerComponent {
   }
 
   onDelete(productId: number): void {
-      this.productService.deleteProduct(productId).subscribe({
-        next: () => {
-          this.router.navigate(['/products']);
-        },
-        error: (error) => {
-          console.error('Error deleting product:', error);
-        }
-      });
+      this.store.deleteProduct(productId)
   }
 }
