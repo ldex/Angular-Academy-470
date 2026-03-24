@@ -1,4 +1,4 @@
-import { Component, Input, numberAttribute, inject, computed } from '@angular/core';
+import { Component, Input, numberAttribute, inject, computed, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ProductDetailsComponent } from '../../components/product-details/product-details.component';
@@ -40,22 +40,10 @@ export class ProductDetailsContainerComponent {
   private authState = toSignal(this.authService.getAuthState());
   isAuthenticated = computed(() => this.authState()?.isAuthenticated ?? false);
 
-  @Input({ transform: numberAttribute })
-  set id(productId: number)
-  {
-    this.productService.getProduct(productId);
+  id = input.required<number>();
 
-    // this.loading = true;
-    // this.product$ = this
-    //   .productService
-    //   .getProduct(productId)
-    //   .pipe(
-    //     catchError(error => {
-    //       this.error = error.message || "Failed to load product";
-    //       return EMPTY;
-    //     }),
-    //     finalize(() => this.loading = false)
-    //   )
+  ngOnInit() {
+    this.productService.getProduct(this.id());
   }
 
   onAddToCart(productId: number): void {

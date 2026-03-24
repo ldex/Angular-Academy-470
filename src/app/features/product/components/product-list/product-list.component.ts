@@ -1,4 +1,4 @@
-import { Component, Input, output, input } from '@angular/core';
+import { Component, Input, output, input, model, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -10,13 +10,15 @@ import { Product } from '../../../../models/product.model';
   templateUrl: './product-list.component.html'
 })
 export class ProductListComponent {
-  @Input() set products(value: Product[] | null) {
-    this._products = value || [];
-    this.applyFilters();
-  }
-  get products(): Product[] {
-    return this._products;
-  }
+  // @Input() set products(value: Product[] | null) {
+  //   this._products = value || [];
+  //   this.applyFilters();
+  // }
+  // get products(): Product[] {
+  //   return this._products;
+  // }
+
+  products = input.required<Product[]>();
 
   readonly error = input.required<string | null>();
   readonly loading = input(false);
@@ -24,27 +26,20 @@ export class ProductListComponent {
   readonly addToCart = output<number>();
   readonly refresh = output<void>();
 
-  selectedCategory = '';
-  searchQuery = '';
-  sortBy = 'name';
+  selectedCategory = model('');
+  searchQuery = model('');
+  sortBy = model('name');
 
-  private _products: Product[] = [];
-  filteredProducts: Product[] = [];
-  categories: string[] = [];
+  categories = computed(() =>
+    [...new Set(this.products().map(p => p.category))]
+  );
 
-  ngOnChanges(): void {
-    if (this.products) {
-      this.categories = [...new Set(this.products.map(p => p.category))];
-      this.applyFilters();
-    }
-  }
-
-  applyFilters(): void {
-    let filtered = [...this.products];
+  filteredProducts = computed(() => {
+    let filtered = [...this.products()];
 
     // Apply search filter
-    if (this.searchQuery) {
-      const query = this.searchQuery.toLowerCase();
+    if (this.searchQuery()) {
+      const query = this.searchQuery().toLowerCase();
       filtered = filtered.filter(product =>
         product.title.toLowerCase().includes(query) ||
         product.description.toLowerCase().includes(query) ||
@@ -53,14 +48,14 @@ export class ProductListComponent {
     }
 
     // Apply category filter
-    if (this.selectedCategory) {
+    if (this.selectedCategory()) {
       filtered = filtered.filter(product =>
-        product.category === this.selectedCategory
+        product.category === this.selectedCategory()
       );
     }
 
     // Apply sorting
-    switch (this.sortBy) {
+    switch (this.sortBy()) {
       case 'price-asc':
         filtered.sort((a, b) => a.price - b.price);
         break;
@@ -74,8 +69,19 @@ export class ProductListComponent {
         filtered.sort((a, b) => a.title.localeCompare(b.title));
     }
 
-    this.filteredProducts = filtered;
-  }
+    return filtered;
+  });
+
+  // private _products: Product[] = [];
+  // filteredProducts: Product[] = [];
+  // categories: string[] = [];
+
+  // ngOnChanges(): void {
+  //   if (this.products) {
+  //     this.categories = [...new Set(this.products.map(p => p.category))];
+  //     this.applyFilters();
+  //   }
+  // }
 
   onAddToCart(productId: number): void {
     this.addToCart.emit(productId);
