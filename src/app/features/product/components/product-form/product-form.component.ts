@@ -1,4 +1,4 @@
-import { Component, Input, inject, output, input } from '@angular/core';
+import { Component, Input, inject, output, input, computed, effect } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -12,25 +12,28 @@ import { Product } from '../../../../models/product.model';
 export class ProductFormComponent {
   private fb = inject(FormBuilder);
 
-  @Input() set product(value: Product | null) {
-    if (value) {
-      this.isEditing = true;
-      this.productForm.patchValue({
-        title: value.title,
-        price: value.price,
-        description: value.description,
-        category: value.category,
-        image: value.image
-      });
-    }
-  }
+  product = input<Product | null>(null);
+
+  isEditing = computed(() => !!this.product());
+
+  // @Input() set product(value: Product | null) {
+  //   if (value) {
+  //     this.isEditing = true;
+  //     this.productForm.patchValue({
+  //       title: value.title,
+  //       price: value.price,
+  //       description: value.description,
+  //       category: value.category,
+  //       image: value.image
+  //     });
+  //   }
+  // }
   readonly isSubmitting = input(false);
 
   readonly save = output<Partial<Product>>();
   readonly cancel = output<void>();
 
   productForm: FormGroup;
-  isEditing = false;
 
   constructor() {
     this.productForm = this.fb.group({
@@ -40,6 +43,20 @@ export class ProductFormComponent {
       category: ['', Validators.required],
       image: ['', [Validators.required, Validators.pattern('https?://.+')]]
     });
+
+    effect(() => {
+      const product = this.product();
+      if (product) {
+        this.productForm.patchValue({
+          title: product.title,
+          price: product.price,
+          description: product.description,
+          category: product.category,
+          image: product.image
+        });
+      }
+    });
+
   }
 
   onSubmit(): void {
