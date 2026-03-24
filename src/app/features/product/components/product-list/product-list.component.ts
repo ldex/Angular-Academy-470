@@ -1,4 +1,4 @@
-import { Component, output, input, model, computed } from '@angular/core';
+import { Component, output, input, model, computed, linkedSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -27,8 +27,20 @@ export class ProductListComponent {
   readonly refresh = output<void>();
 
   selectedCategory = model('');
-  searchQuery = model('');
-  sortBy = model('name');
+
+  searchQuery = linkedSignal(
+    {
+      source: this.selectedCategory,
+      computation: () => ''
+    }
+  );
+
+  sortBy = linkedSignal(
+    {
+      source: this.searchQuery,
+      computation: () => 'name'
+    }
+  );
 
   categories = computed(() =>
     [...new Set(this.products().map(p => p.category))]
